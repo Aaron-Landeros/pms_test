@@ -1,1 +1,5 @@
-
+.env
+vendor/
+projects_documentation/
+materials_csv/
+users_csv/

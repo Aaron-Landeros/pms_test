@@ -1,8 +1,17 @@
 <?php
+ini_set('session.cookie_httponly', 1);
+ini_set('session.cookie_secure', 1);
+ini_set('session.cookie_samesite', 'Lax');
 session_start();
+require '../../../shared/core/csrf.php';
+require '../../../shared/log.php';
 require "../model/login_queries.php";
 require '../model/remember_me_helper.php';
-//require '../model/notifications_queries.php'; 
+//require '../model/notifications_queries.php';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !csrf_check($_POST['csrf_token'] ?? '')) {
+    http_response_code(403);
+    exit('Invalid CSRF token');
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $user_request = filter_input(INPUT_POST, 'user_request');
@@ -40,6 +49,7 @@ switch ($user_request) {
                 $_SESSION["user_status"] = $user_data['user_status'];
 
                 if ($user_role === $user_role_login) {
+                    session_regenerate_id(true);
                     $_SESSION["user_id"] = $user_data['user_id'];
                     $_SESSION["user_first_name"] = $user_data['user_first_name'];
                     $_SESSION["user_last_name"] = $user_data['user_last_name'];
@@ -52,11 +62,13 @@ switch ($user_request) {
                     include '../components/redirect_user_script.php';
                     $content = ob_get_clean(); 
                     echo json_encode(['status' => 'success', 'message' => '<case> fetched successfully', 'view' => $content]);
+                    log_event('login_success', ['user_id'=>$user_id]);
                 }else {
                     ob_start();
                     include '../components/access_denied.php';
                     $content = ob_get_clean(); 
                     echo json_encode(['status' => 'success', 'message' => '<case> fetched successfully', 'view' => $content]);
+                    log_event('login_role_mismatch', ['user_id'=>$user_id]);
                 }
             }
         } catch (PDOException $e) {
@@ -84,6 +96,7 @@ switch ($user_request) {
             session_destroy();
 
             echo json_encode(['status' => 'success', 'message' => 'Log out successful']);
+            log_event('logout', ['user_id'=>$user_id]);
         }catch (Exception $e) {
             error_log('Error: ' . $e->getMessage());
             $message = $development_mode ? $e->getMessage() : $user_message;

@@ -1,5 +1,8 @@
 <?php
 session_start();
+require '../shared/core/security_headers.php';
+require '../shared/core/csrf.php';
+set_security_headers();
 ini_set('display_errors', 0);
 
 if (!isset($_SESSION['user_id'])) {
@@ -45,6 +48,7 @@ if ($user_status !== 'ACTIVE' || $user_role !== 'PROJECT_MANAGER') {
     <?php include '../shared/components/toast_notification.php' ?>
     <input type="hidden" value="<?= $user_first_name ?>" id="input_hidden_first_name">
     <input type="hidden" value="<?= $session_user_id ?>" id="input_hidden_user_id">
+    <input type="hidden" id="csrf_token" value="<?= csrf_token(); ?>">
     <div class="main-container">
         <?php include '../shared/components/sidebar.php' ?>
         <div class="main-content-container container-fluid ps-md-5 ms-md-5 mt-3" id="app_content"></div>
@@ -53,6 +57,11 @@ if ($user_status !== 'ACTIVE' || $user_role !== 'PROJECT_MANAGER') {
     <div id="toast_container"></div>
     <?php include '../shared/components/loading_spinner.php' ?>
 
+    <script>
+    window.assetIntegrity = {
+        "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js": "sha384-PLACEHOLDER"
+    };
+    </script>
     <script src="../shared/script-loader.js"></script>
 
 </body>

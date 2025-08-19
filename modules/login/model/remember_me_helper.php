@@ -30,8 +30,8 @@ function check_remember_me_cookie() {
                 $_SESSION['user_email'] = $user_data['user_email'];
             }
         } else {
-            setcookie('remember_me_selector', '', time() - 3600, '/');
-            setcookie('remember_me_token', '', time() - 3600, '/');
+            setcookie('remember_me_selector', '', time() - 3600, '/', '', true, true);
+            setcookie('remember_me_token', '', time() - 3600, '/', '', true, true);
         }
     }
 }
