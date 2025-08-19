@@ -87,9 +87,7 @@ $(function () {
             message = "Good evening, ";
         }
 
-        toastElement.find('.toast-body').html(`
-            ${message}${user_name}
-        `);
+        toastElement.find('.toast-body').text(`${message}${user_name}`);
 
         $('#greeting').text(message + user_name);
         

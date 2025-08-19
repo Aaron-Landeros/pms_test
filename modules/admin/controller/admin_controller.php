@@ -1,6 +1,14 @@
 <?php
 session_start();
+require '../../../shared/core/auth.php';
+require '../../../shared/core/csrf.php';
 require "../model/admin_queries.php";
+require_role(['ADMIN']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !csrf_check($_POST['csrf_token'] ?? '')) {
+    http_response_code(403);
+    exit('Invalid CSRF token');
+}
+require_once '../../../shared/log.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $user_request = filter_input(INPUT_POST, 'user_request');
@@ -16,6 +24,7 @@ set_error_handler(function ($errno, $errstr, $errfile, $errline) {
 });
 
 $session_user_id = $_SESSION["user_id"];
+log_event('admin_request', ['action'=>$user_request]);
 switch ($user_request) {
     case 'modal_add_new_activity':
         try {

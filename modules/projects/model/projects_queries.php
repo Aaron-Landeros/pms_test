@@ -155,26 +155,27 @@ function fetch_task_log_files($project_id, $task_id, $task_log_id){
 
 function download_project_file($project_id, $file_log_id, $folder, $filename) {
     try {
+        require_once '../../../shared/log.php';
         if($folder == 'assembly' || $folder == 'machinary') {
-            $directory = "../../../projects_documentation/$project_id/designs/$folder/$file_log_id";
+            $directory = realpath("../../../projects_documentation/$project_id/designs/$folder/$file_log_id");
         } else {
-            $directory = "../../../projects_documentation/$project_id/$folder/$file_log_id";
+            $directory = realpath("../../../projects_documentation/$project_id/$folder/$file_log_id");
         }
-        $fileNameParts = explode(".", $filename);
-        $file = $fileNameParts[0];
-
-        $found = glob("$directory/$filename");
-        $file = $found[0];
-
+        $name = basename($filename);
+        $file = realpath($directory . "/" . $name);
+        if ($file === false || strpos($file, $directory) !== 0) {
+            throw new Exception('Invalid file path');
+        }
         header('Content-Description: File Transfer');
-        header('Content-Type: application/force-download');
+        header('Content-Type: application/octet-stream');
         header("Content-Disposition: attachment; filename=\"" . basename($file) . "\";");
         header('Content-Transfer-Encoding: binary');
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
         header('Content-Length: ' . filesize($file));
-        readfile($file); 
+        readfile($file);
+        log_event('download', ['file'=>$file]);
         exit;
     } catch (Exception $e) {
         error_log("Error in download_project_file: " . $e->getMessage());
@@ -431,27 +432,34 @@ function add_file_log($db, $project_id, $session_user_id, $folder, $file_date, $
 
 function upload_project_files($project_id, $folder, $total_count, $files, $file_log_id) {
     try {
+        require_once '../../../shared/log.php';
         if($folder == 'assembly' || $folder == 'machinary') {
             $directory = "../../../projects_documentation/$project_id/designs/$folder/$file_log_id";
         } else {
             $directory = "../../../projects_documentation/$project_id/$folder/$file_log_id";
         }
         mkdir($directory);
-
+        $allowed = ['pdf','png','jpg'];
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
         for($i=0; $i < $total_count; $i++) {
-            $tmpFilePath = $_FILES['new_files_array']['tmp_name'][$i];
-
-            if($tmpFilePath != "") {
-                $cleaned_file_name = clean_filename($_FILES['new_files_array']['name'][$i]);
-
-                $newFilePath = "$directory/" . $cleaned_file_name;
-
-                if(move_uploaded_file($tmpFilePath, $newFilePath)) {
-                } else {
+            $tmp = $_FILES['new_files_array']['tmp_name'][$i];
+            $name = $_FILES['new_files_array']['name'][$i];
+            $size = $_FILES['new_files_array']['size'][$i];
+            if($tmp) {
+                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                $mime = finfo_file($finfo, $tmp);
+                if(!in_array($ext,$allowed) || !in_array($mime,['application/pdf','image/png','image/jpeg']) || $size > 5242880){
+                    continue;
+                }
+                $cleaned = clean_filename($name);
+                $new = "$directory/$cleaned";
+                if(!move_uploaded_file($tmp,$new)) {
                     throw new Exception("Error uploading file");
                 }
+                log_event('upload', ['file'=>$new]);
             }
         }
+        finfo_close($finfo);
     } catch (Exception $e) {
         error_log("Error in upload_project_files: " . $e->getMessage());
         throw $e;

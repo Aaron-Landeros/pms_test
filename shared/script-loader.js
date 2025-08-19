@@ -2,7 +2,8 @@ const page = document.body.dataset.page || "index";
 const role = document.body.dataset.userRole || "GUEST";
 
 const base_scripts = [
-  "../utilities/js/jquery.js",
+  "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js",
+  "../shared/core/csrf.js",
   "../utilities/JqueryUI/jquery-ui.min.js",
   "../utilities/bootstrap/bootstrap.min.js",
   "../utilities/sweetalert2/sweetalert2.min.js",
@@ -47,6 +48,8 @@ function loadScriptSequentially(src) {
   return new Promise((resolve, reject) => {
     const s = document.createElement("script");
     s.src = src;
+    s.integrity = window.assetIntegrity?.[src] || "";
+    s.crossOrigin = "anonymous";
     s.defer = true;
     s.onload = () => resolve();
     s.onerror = () => reject(new Error(`Script load error: ${src}`));

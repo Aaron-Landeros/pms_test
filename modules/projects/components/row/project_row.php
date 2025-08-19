@@ -6,9 +6,9 @@
     }
 ?>
 
-<tr class="project-row pointer text-center" data-project-id="<?= $project_id ?>">
-    <td class="text-start" id=""><?= $project_name ?></td>
-    <td class="text-start" id=""><?= $company_name ?></td>
+<tr class="project-row pointer text-center" data-project-id="<?= htmlspecialchars($project_id, ENT_QUOTES, 'UTF-8') ?>">
+    <td class="text-start" id=""><?= htmlspecialchars($project_name, ENT_QUOTES, 'UTF-8') ?></td>
+    <td class="text-start" id=""><?= htmlspecialchars($company_name, ENT_QUOTES, 'UTF-8') ?></td>
     <td class="text-center" id=""><?= date('m/d/Y', strtotime($start_date)) ?></td>
     <td class="text-center" id=""><?= date('m/d/Y', strtotime($end_date))?></td>
     <td class="text-center"><?= $project_status ?></td>

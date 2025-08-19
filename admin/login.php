@@ -1,3 +1,9 @@
+<?php
+session_start();
+require '../shared/core/security_headers.php';
+require '../shared/core/csrf.php';
+set_security_headers();
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -34,6 +40,7 @@
                             <input type="password" name="password" class="form-control w-100 bg-dark-input border-dark-input" id="input_pwrd" placeholder="Enter password" required>
                         </div>
                         <input type="hidden" name="user_role" id="user_role" value="ADMIN">
+                        <input type="hidden" id="csrf_token" value="<?= csrf_token(); ?>">
                         <!-- check remember me -->
                         <!-- <div class="mb-2 w-100 d-flex">
                             <input class="me-2 mb-1" type="checkbox" value="" id="checkbox_remember_me" autocomplete="off">
@@ -75,6 +82,11 @@
             </div>
         </div>
     </div>
+    <script>
+    window.assetIntegrity = {
+        "https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js": "sha384-PLACEHOLDER"
+    };
+    </script>
     <script src="../shared/script-loader.js"></script>
 
 
