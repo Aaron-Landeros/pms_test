@@ -1,0 +1,1 @@
+<option value="<?= $dept_id ?>" data-dept-status="<?= $department_status ?? '' ?>" ><?= $department_name ?></option>
